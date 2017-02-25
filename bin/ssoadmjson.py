@@ -69,13 +69,14 @@ def main(argv):
         default=am_url,
     )
     argp.add_argument(
-        '--login-realm',
+        '-R', '--login-realm',
+        metavar='REALM',
         help='Realm for login',
         type=str,
         default=am_login_realm,
     )
     argp.add_argument(
-        '--login-user',
+        '-u', '--login-user',
         metavar='USERNAME',
         help='Username for login',
         type=str,
@@ -90,7 +91,7 @@ def main(argv):
         default=am_login_pass,
     )
     argp.add_argument(
-        '--login-password-file',
+        '-p', '--login-password-file',
         dest='login_pass_file',
         metavar='FILE',
         help='Password file for login',
@@ -98,7 +99,7 @@ def main(argv):
         default=None,
     )
     argp.add_argument(
-        '--realm',
+        '-r', '--realm',
         help='Realm',
         type=str,
         default=am_realm,
