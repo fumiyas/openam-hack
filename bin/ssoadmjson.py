@@ -50,6 +50,7 @@ def main(argv):
     argp.add_argument(
         'section',
         metavar='SECTION',
+        help='Items section (realms, users, groups, agents, applications, resourcetypes, policies, ...)',
         type=str,
         nargs='?',
         default='realms',
