@@ -71,12 +71,22 @@ def main(argv):
         default=am_realm,
     )
     argp.add_argument(
+        '--json-indent',
+        metavar='N',
+        help='Indent level for JSON output (negative value disables pretty-print)',
+        type=int,
+        default=4,
+    )
+    argp.add_argument(
         '--no-logout',
         dest='logout',
         action='store_false',
         default=True,
     )
     args = argp.parse_args(argv[1:])
+
+    if args.json_indent < 0:
+        args.json_indent = None
 
     ## FIXME: Raise an exception if name has invalid characters?
 
@@ -110,7 +120,7 @@ def main(argv):
         ret = code - 350
         ## code = ret + 350
 
-    print(json.dumps(data, indent=4, sort_keys=True))
+    print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
     if args.logout:
         am_logout(token)
