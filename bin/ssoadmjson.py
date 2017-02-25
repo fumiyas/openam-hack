@@ -90,9 +90,8 @@ def main(argv):
 
     ## FIXME: Raise an exception if name has invalid characters?
 
-    data, token = am_login(am_url, args.realm, am_user, am_pass)
-
     try:
+        data, token = am_login(am_url, args.realm, am_user, am_pass)
         if args.method == "login":
             pass
         elif args.method == "get":
@@ -122,7 +121,8 @@ def main(argv):
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
-    if args.logout:
+    if args.logout and not (args.method == "login" and ret != 0):
+        print("logout")
         am_logout(token)
 
     return ret
