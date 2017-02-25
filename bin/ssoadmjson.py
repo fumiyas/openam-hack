@@ -10,6 +10,7 @@
 from __future__ import print_function
 
 import logging
+import argparse
 import os
 import sys
 import imp
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 conf_path = os.getenv("SSOADMJSON_CONF", "/opt/osstech/etc/openam/ssoadmjson.conf")
 
 am_url = "http://localhost:8080/openam"
+am_realm = '/'
 am_user = "amadmin"
 am_pass = "blah-blah"
 
@@ -31,31 +33,75 @@ am_pass = "blah-blah"
 def main(argv):
     ret = 0
 
-    realm = argv.pop(0)
-    section = argv.pop(0)
-    method = argv.pop(0)
-    name = argv.pop(0) if len(argv) else None
+    imp.load_source(__name__, conf_path)
+
+    argp = argparse.ArgumentParser(prog=argv[0])
+    argp.add_argument(
+        'method',
+        metavar='METHOD',
+        help='HTTP method (get, post, put, delete)',
+        type=str,
+        choices=('get', 'post', 'put', 'delete', 'login'),
+    )
+    argp.add_argument(
+        'section',
+        metavar='SECTION',
+        type=str,
+        nargs='?',
+        default='realms',
+    )
+    argp.add_argument(
+        'name',
+        metavar='NAME',
+        help='Item name or UUID',
+        type=str,
+        nargs='?',
+        default=None,
+    )
+    argp.add_argument(
+        '--url',
+        help='OpenAM server URL',
+        type=str,
+        default=am_url,
+    )
+    argp.add_argument(
+        '--realm',
+        help='Realm',
+        type=str,
+        default=am_realm,
+    )
+    argp.add_argument(
+        '--no-logout',
+        dest='logout',
+        action='store_false',
+        default=True,
+    )
+    args = argp.parse_args(argv[1:])
 
     ## FIXME: Raise an exception if name has invalid characters?
 
-    imp.load_source(__name__, conf_path)
-
-    token = am_login(am_url, realm, am_user, am_pass)
+    data, token = am_login(am_url, args.realm, am_user, am_pass)
 
     try:
-        if method == "get":
-            res, data = am_get(token, section, name)
+        if args.method == "login":
+            pass
+        elif args.method == "get":
+            res, data = am_get(token, args.section, args.name)
             data = data["result"]
-        elif method == "post":
+        elif args.method == "post":
             data = json.loads(sys.stdin.read())
-            res, data = am_post(token, section, name, data, action="create")
-        elif method == "put":
+            if args.name is None:
+                args.name = data.get('uuid', data.get('name'))
+            res, data = am_post(token, args.section, args.name, data, action="create")
+        elif args.method == "put":
             data = json.loads(sys.stdin.read())
-            res, data = am_put(token, section, name)
-        elif method == "delete":
-            res, data = am_delete(token, section, name)
+            if args.name is None:
+                args.name = data.get('uuid', data.get('name'))
+            res, data = am_put(token, args.section, args.name)
+        elif args.method == "delete":
+            res, data = am_delete(token, args.section, args.name)
         else:
-            logger.error("Unknown method: %s", method)
+            logger.error("Unknown method: %s", args.method)
             return 1
     except urllib2.HTTPError as e:
         data = json.loads(e.read())
@@ -66,7 +112,8 @@ def main(argv):
 
     print(json.dumps(data, indent=4, sort_keys=True))
 
-    am_logout(token)
+    if args.logout:
+        am_logout(token)
 
     return ret
 
@@ -91,7 +138,7 @@ def am_login(url, realm, user, pw):
 
     token["headers"].update({"iPlanetDirectoryPro": data["tokenId"]})
 
-    return token
+    return data, token
 
 
 def am_logout(token):
@@ -168,8 +215,4 @@ if __name__ == '__main__':
     loghandler.setFormatter(logformatter)
     logger.addHandler(loghandler)
 
-    if len(sys.argv) < 3:
-        print("Usage: %s REALM SECTION METHOD [NAME_OR_UUID]" % (sys.argv[0]), file=sys.stderr)
-        sys.exit(1)
-
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv))
