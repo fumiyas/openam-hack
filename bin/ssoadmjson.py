@@ -27,7 +27,7 @@ am_url = "http://localhost:8080/openam"
 am_realm = '/'
 am_login_realm = '/'
 am_login_user = "amadmin"
-am_login_pass = "blah-blah"
+am_login_pass = ""
 
 ## ======================================================================
 
@@ -76,6 +76,29 @@ def main(argv):
         default=am_login_realm,
     )
     argp.add_argument(
+        '--login-user',
+        metavar='USERNAME',
+        help='Username for login',
+        type=str,
+        default=am_login_user,
+    )
+    argp.add_argument(
+        '--login-password',
+        dest='login_pass',
+        metavar='PASSWORD',
+        help=argparse.SUPPRESS,
+        type=str,
+        default=am_login_pass,
+    )
+    argp.add_argument(
+        '--login-password-file',
+        dest='login_pass_file',
+        metavar='FILE',
+        help='Password file for login',
+        type=str,
+        default=None,
+    )
+    argp.add_argument(
         '--realm',
         help='Realm',
         type=str,
@@ -96,6 +119,10 @@ def main(argv):
     )
     args = argp.parse_args(argv[1:])
 
+    if args.login_pass_file is not None:
+        for line in open(args.login_pass_file):
+            args.login_pass = line.rstrip('\n')
+            break
     if args.json_indent < 0:
         args.json_indent = None
 
@@ -104,7 +131,7 @@ def main(argv):
     ret = 0
     token = None
     try:
-        data, token = am_login(am_url, args.realm, args.login_realm, am_login_user, am_login_pass)
+        data, token = am_login(am_url, args.realm, args.login_realm, args.login_user, args.login_pass)
         if args.method == "login":
             pass
         elif args.method == "get":
