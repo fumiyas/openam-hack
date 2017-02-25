@@ -36,7 +36,6 @@ def main(argv):
     try:
         imp.load_source(__name__, conf_path)
     except IOError as e:
-        print(e.errno)
         if e.errno not in [errno.ENOENT, errno.EPERM, errno.EACCES]:
             raise
 
