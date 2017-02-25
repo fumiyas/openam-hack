@@ -41,11 +41,11 @@ def main(argv):
 
     argp = argparse.ArgumentParser(prog=argv[0])
     argp.add_argument(
-        'method',
-        metavar='METHOD',
-        help='HTTP method (get, post, put, delete)',
+        'op',
+        metavar='OPERATION',
+        help='Operation (create, read, update, delete)',
         type=str,
-        choices=('get', 'post', 'put', 'delete', 'login'),
+        choices=('create', 'read', 'update', 'delete', 'login', 'get', 'post', 'put'),
     )
     argp.add_argument(
         'section',
@@ -132,23 +132,23 @@ def main(argv):
     token = None
     try:
         data, token = am_login(am_url, args.realm, args.login_realm, args.login_user, args.login_pass)
-        if args.method == "login":
+        if args.op in ['login']:
             pass
-        elif args.method == "get":
+        elif args.op in ['read', 'get']:
             res, data = am_get(token, args.section, args.name)
             data = data["result"]
-        elif args.method == "post":
+        elif args.op in ['create', 'post']:
             data = json.loads(sys.stdin.read())
             res, data = am_post(token, args.section, args.name, data, action="create")
-        elif args.method == "put":
+        elif args.op in ['update', 'put']:
             data = json.loads(sys.stdin.read())
             if args.name is None:
                 args.name = data.get('uuid', data.get('name'))
             res, data = am_put(token, args.section, args.name, data)
-        elif args.method == "delete":
+        elif args.op in ['delete']:
             res, data = am_delete(token, args.section, args.name)
         else:
-            logger.error("Unknown method: %s", args.method)
+            logger.error("Unknown operation: %s", args.op)
             return 1
     except urllib2.URLError as e:
         logger.error("Opening URL failed: %s %s", args.url, e)
