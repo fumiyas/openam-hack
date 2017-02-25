@@ -114,6 +114,7 @@ def main(argv):
     argp.add_argument(
         '--no-logout',
         dest='logout',
+        help=argparse.SUPPRESS,
         action='store_false',
         default=True,
     )
