@@ -106,7 +106,7 @@ def main(argv):
             data = json.loads(sys.stdin.read())
             if args.name is None:
                 args.name = data.get('uuid', data.get('name'))
-            res, data = am_put(token, args.section, args.name)
+            res, data = am_put(token, args.section, args.name, data)
         elif args.method == "delete":
             res, data = am_delete(token, args.section, args.name)
         else:
@@ -143,7 +143,7 @@ def am_login(url, realm, user, pw):
         "X-OpenAM-Password": pw,
     }
 
-    res, data = am_post(token, "authenticate", headers=headers)
+    res, data = am_post(token, "authenticate", None, {}, headers=headers)
 
     token["headers"].update({"iPlanetDirectoryPro": data["tokenId"]})
 
@@ -151,7 +151,7 @@ def am_login(url, realm, user, pw):
 
 
 def am_logout(token):
-    res, data = am_post(token, "sessions", action="logout")
+    res, data = am_post(token, "sessions", None, {}, action="logout")
 
 
 def am_url_and_headers(token, section, name=None, headers={}):
@@ -164,7 +164,7 @@ def am_url_and_headers(token, section, name=None, headers={}):
     return (url, headers)
 
 
-def am_get(token, section, name=None, data={}, headers={}):
+def am_get(token, section, name, data={}, headers={}):
     url, headers = am_url_and_headers(token, section, headers=headers)
     if name is None:
         data["_queryFilter"] = "true"
@@ -179,7 +179,7 @@ def am_get(token, section, name=None, data={}, headers={}):
     return (res, data)
 
 
-def am_post(token, section, name=None, data={}, headers={}, action=None):
+def am_post(token, section, name, data, headers={}, action=None):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if action is not None:
         url += '&_action=' + urllib.quote(action)
@@ -191,7 +191,7 @@ def am_post(token, section, name=None, data={}, headers={}, action=None):
     return (res, data)
 
 
-def am_put(token, section, name, data={}, headers={}, action=None):
+def am_put(token, section, name, data, headers={}, action=None):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if action is not None:
         url += '&_action=' + urllib.quote(action)
