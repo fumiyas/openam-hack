@@ -69,7 +69,7 @@ def main(argv):
         default=am_url,
     )
     argp.add_argument(
-        '-R', '--login-realm',
+        '--login-realm', '-R',
         metavar='REALM',
         help='Realm for login',
         type=str,
