@@ -123,6 +123,9 @@ def main(argv):
         else:
             logger.error("Unknown method: %s", args.method)
             return 1
+    except urllib2.URLError as e:
+        logger.error("Opening URL failed: %s %s", args.url, e)
+        return 1
     except urllib2.HTTPError as e:
         data = json.loads(e.read())
         code = e.getcode()
