@@ -13,6 +13,7 @@ import logging
 import argparse
 import os
 import sys
+import errno
 import imp
 import json
 import urllib2
@@ -32,7 +33,12 @@ am_login_pass = "blah-blah"
 
 
 def main(argv):
-    imp.load_source(__name__, conf_path)
+    try:
+        imp.load_source(__name__, conf_path)
+    except IOError as e:
+        print(e.errno)
+        if e.errno not in [errno.ENOENT, errno.EPERM, errno.EACCES]:
+            raise
 
     argp = argparse.ArgumentParser(prog=argv[0])
     argp.add_argument(
