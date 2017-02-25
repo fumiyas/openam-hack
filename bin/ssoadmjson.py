@@ -24,8 +24,9 @@ conf_path = os.getenv("SSOADMJSON_CONF", "/opt/osstech/etc/openam/ssoadmjson.con
 
 am_url = "http://localhost:8080/openam"
 am_realm = '/'
-am_user = "amadmin"
-am_pass = "blah-blah"
+am_login_realm = '/'
+am_login_user = "amadmin"
+am_login_pass = "blah-blah"
 
 ## ======================================================================
 
@@ -63,6 +64,12 @@ def main(argv):
         default=am_url,
     )
     argp.add_argument(
+        '--login-realm',
+        help='Realm for login',
+        type=str,
+        default=am_login_realm,
+    )
+    argp.add_argument(
         '--realm',
         help='Realm',
         type=str,
@@ -91,7 +98,7 @@ def main(argv):
     ret = 0
     token = None
     try:
-        data, token = am_login(am_url, args.realm, am_user, am_pass)
+        data, token = am_login(am_url, args.realm, args.login_realm, am_login_user, am_login_pass)
         if args.method == "login":
             pass
         elif args.method == "get":
@@ -99,8 +106,6 @@ def main(argv):
             data = data["result"]
         elif args.method == "post":
             data = json.loads(sys.stdin.read())
-            if args.name is None:
-                args.name = data.get('uuid', data.get('name'))
             res, data = am_post(token, args.section, args.name, data, action="create")
         elif args.method == "put":
             data = json.loads(sys.stdin.read())
@@ -127,20 +132,22 @@ def main(argv):
     return ret
 
 
-def am_login(url, realm, user, pw):
+def am_login(url, realm, login_realm, login_user, login_pass):
     token = {
         "url": url,
         "url_json": url + '/json/',
         "url_realm": urllib.quote(realm),
+        "url_login_realm": urllib.quote(login_realm),
         "realm": realm,
-        "user": user,
+        "login_realm": login_realm,
+        "login_user": login_user,
         "headers": {
             "Content-Type": "application/json",
         },
     }
     headers = {
-        "X-OpenAM-Username": user,
-        "X-OpenAM-Password": pw,
+        "X-OpenAM-Username": login_user,
+        "X-OpenAM-Password": login_pass,
     }
 
     res, data = am_post(token, "authenticate", None, {}, headers=headers)
@@ -158,7 +165,7 @@ def am_url_and_headers(token, section, name=None, headers={}):
     url = token["url_json"] + urllib.quote(section, safe="")
     if name is not None:
         url += '/' + urllib.quote(name, safe="")
-    url += '?realm=' + token["url_realm"]
+    url += '?realm=' + token["url_login_realm"]
     headers = dict(headers, **token["headers"])
 
     return (url, headers)
