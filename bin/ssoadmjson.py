@@ -31,8 +31,6 @@ am_pass = "blah-blah"
 
 
 def main(argv):
-    ret = 0
-
     imp.load_source(__name__, conf_path)
 
     argp = argparse.ArgumentParser(prog=argv[0])
@@ -90,6 +88,8 @@ def main(argv):
 
     ## FIXME: Raise an exception if name has invalid characters?
 
+    ret = 0
+    token = None
     try:
         data, token = am_login(am_url, args.realm, am_user, am_pass)
         if args.method == "login":
@@ -121,8 +121,7 @@ def main(argv):
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
-    if args.logout and not (args.method == "login" and ret != 0):
-        print("logout")
+    if args.logout and token is not None:
         am_logout(token)
 
     return ret
