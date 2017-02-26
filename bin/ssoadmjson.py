@@ -34,6 +34,7 @@ am_login_user = "amadmin"
 am_login_password = ""
 
 uuid_re = re.compile(r'^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$')
+attrs_meta = ('createdBy', 'creationDate', 'lastModifiedBy', 'lastModifiedDate')
 
 ## ======================================================================
 
@@ -119,6 +120,12 @@ def main(argv):
         default=4,
     )
     argp.add_argument(
+        '--json-include-meta',
+        help='Include meta attributes (createdBy and misc.) in JSON output',
+        action='store_true',
+        default=False,
+    )
+    argp.add_argument(
         '--no-logout',
         dest='logout',
         help=argparse.SUPPRESS,
@@ -167,6 +174,15 @@ def main(argv):
     except urllib2.URLError as e:
         logger.error("Opening URL failed: %s %s", args.url, e)
         return 1
+
+    if not args.json_include_meta:
+        if isinstance(data, list):
+            for item in data:
+                for attr in attrs_meta:
+                    item.pop(attr)
+        else:
+            for attr in attrs_meta:
+                data.pop(attr)
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
