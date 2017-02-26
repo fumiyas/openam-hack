@@ -133,7 +133,7 @@ def main(argv):
     ret = 0
     token = None
     try:
-        data, token = am_login(am_url, args.realm, args.login_realm, args.login_user, args.login_pass)
+        data, token = am_login(args.url, args.realm, args.login_realm, args.login_user, args.login_pass)
         if args.op in ['login']:
             pass
         elif args.op in ['read', 'get']:
