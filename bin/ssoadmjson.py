@@ -177,8 +177,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
     token = {
         "url": url,
         "url_json": url + '/json/',
-        "url_realm": urllib.quote(realm),
-        "url_login_realm": urllib.quote(login_realm),
+        "url_realm": urllib.quote(login_realm),
         "realm": realm,
         "login_realm": login_realm,
         "login_user": login_user,
@@ -193,6 +192,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
 
     res, data = am_post(token, "authenticate", None, {}, headers=headers)
 
+    token["url_realm"] = urllib.quote(realm)
     token["headers"].update({"iPlanetDirectoryPro": data["tokenId"]})
 
     return data, token
@@ -206,7 +206,7 @@ def am_url_and_headers(token, section, name=None, headers={}):
     url = token["url_json"] + urllib.quote(section, safe="")
     if name is not None:
         url += '/' + urllib.quote(name, safe="")
-    url += '?realm=' + token["url_login_realm"]
+    url += '?realm=' + token["url_realm"]
     headers = dict(headers, **token["headers"])
 
     return (url, headers)
