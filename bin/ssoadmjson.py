@@ -7,6 +7,9 @@
 ## License: GNU General Public License version 3
 ##
 
+## TODO: Verify server certificate
+## TODO: Use requests instead of urllib2?
+
 from __future__ import print_function
 
 import logging
