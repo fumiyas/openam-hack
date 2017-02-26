@@ -170,7 +170,7 @@ def main(argv):
         ## Map an error HTTP response code (4XX, 5XX) into the exit code
         ret = code - 350
         if code >= 500:
-            logger.error("HTTP request failed: %s", e)
+            logger.error("HTTP server error: %s", e)
             return ret
         data = json.loads(e.read())
     except urllib2.URLError as e:
