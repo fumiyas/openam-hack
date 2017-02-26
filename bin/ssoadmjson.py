@@ -166,11 +166,13 @@ def main(argv):
             logger.error("Unknown operation: %s", args.op)
             return 1
     except urllib2.HTTPError as e:
-        data = json.loads(e.read())
         code = e.getcode()
         ## Map an error HTTP response code (4XX, 5XX) into the exit code
         ret = code - 350
-        ## code = ret + 350
+        if code >= 500:
+            logger.error("HTTP request failed: %s", e)
+            return ret
+        data = json.loads(e.read())
     except urllib2.URLError as e:
         logger.error("Opening URL failed: %s %s", args.url, e)
         return 1
