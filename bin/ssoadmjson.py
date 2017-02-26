@@ -16,6 +16,7 @@ import logging
 import argparse
 import os
 import sys
+import re
 import errno
 import imp
 import json
@@ -31,6 +32,8 @@ am_realm = '/'
 am_login_realm = '/'
 am_login_user = "amadmin"
 am_login_password = ""
+
+uuid_re = re.compile(r'^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$')
 
 ## ======================================================================
 
@@ -217,7 +220,11 @@ def am_get(token, section, name, data={}, headers={}):
     if name is None:
         data["_queryFilter"] = "true"
     else:
-        data["_queryFilter"] = 'name eq "%s"' % name
+        if uuid_re.match(name):
+            ## FIXME: This does NOT match any UUIDs. Why?
+            data["_queryFilter"] = 'uuid eq "%s"' % name
+        else:
+            data["_queryFilter"] = 'name eq "%s"' % name
     if len(data):
         url += '&' + urllib.urlencode(data)
 
