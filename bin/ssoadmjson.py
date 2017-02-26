@@ -181,10 +181,10 @@ def main(argv):
         if isinstance(data, list):
             for item in data:
                 for attr in attrs_meta:
-                    item.pop(attr)
+                    item.pop(attr, None)
         else:
             for attr in attrs_meta:
-                data.pop(attr)
+                data.pop(attr, None)
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
