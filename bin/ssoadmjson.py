@@ -30,7 +30,7 @@ am_url = "http://localhost:8080/openam"
 am_realm = '/'
 am_login_realm = '/'
 am_login_user = "amadmin"
-am_login_pass = ""
+am_login_password = ""
 
 ## ======================================================================
 
@@ -92,7 +92,7 @@ def main(argv):
         metavar='PASSWORD',
         help=argparse.SUPPRESS,
         type=str,
-        default=am_login_pass,
+        default=am_login_password,
     )
     argp.add_argument(
         '-p', '--login-password-file',
@@ -155,15 +155,15 @@ def main(argv):
         else:
             logger.error("Unknown operation: %s", args.op)
             return 1
-    except urllib2.URLError as e:
-        logger.error("Opening URL failed: %s %s", args.url, e)
-        return 1
     except urllib2.HTTPError as e:
         data = json.loads(e.read())
         code = e.getcode()
         ## Map an error HTTP response code (4XX, 5XX) into the exit code
         ret = code - 350
         ## code = ret + 350
+    except urllib2.URLError as e:
+        logger.error("Opening URL failed: %s %s", args.url, e)
+        return 1
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
