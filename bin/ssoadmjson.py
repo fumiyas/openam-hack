@@ -218,7 +218,8 @@ def am_get(token, section, name, data={}, headers={}):
         data["_queryFilter"] = "true"
     else:
         data["_queryFilter"] = 'name eq "%s"' % name
-    url += '&' + urllib.urlencode(data)
+    if len(data):
+        url += '&' + urllib.urlencode(data)
 
     req = urllib2.Request(url, None, headers)
     res = urllib2.urlopen(req)
@@ -254,7 +255,8 @@ def am_put(token, section, name, data, headers={}, action=None):
 
 def am_delete(token, section, name, data={}, headers={}):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
-    url += '&' + urllib.urlencode(data)
+    if len(data):
+        url += '&' + urllib.urlencode(data)
 
     req = urllib2.Request(url, None, headers)
     req.get_method = lambda: 'DELETE'
