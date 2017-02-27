@@ -192,13 +192,7 @@ def main(argv):
         return 1
 
     if not args.json_include_meta:
-        if isinstance(data, list):
-            for item in data:
-                for attr in attrs_meta:
-                    item.pop(attr, None)
-        else:
-            for attr in attrs_meta:
-                data.pop(attr, None)
+        data = dict_delete_keys_recursive(data, attrs_meta)
 
     for filter in filters:
         data = data[filter]
@@ -209,6 +203,17 @@ def main(argv):
         am_logout(token)
 
     return ret
+
+
+def dict_delete_keys_recursive(data, keys):
+    if isinstance(data, list):
+        data = [dict_delete_keys_recursive(x, keys) for x in data]
+    elif isinstance(data, dict):
+        for key in keys:
+            data.pop(key, None)
+        data = {k: dict_delete_keys_recursive(data[k], keys) for k in data}
+
+    return data
 
 
 def am_login(url, realm, login_realm, login_user, login_pass):
