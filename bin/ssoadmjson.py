@@ -232,7 +232,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
     res, data = am_post(token, "authenticate", None, {}, headers=headers)
 
     token["url_realm"] = urllib.quote(realm)
-    token["headers"].update({"iPlanetDirectoryPro": data["tokenId"]})
+    token["headers"]["iPlanetDirectoryPro"] = data["tokenId"]
 
     return data, token
 
