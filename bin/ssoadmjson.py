@@ -126,6 +126,13 @@ def main(argv):
         default=False,
     )
     argp.add_argument(
+        '--json-filter',
+        metavar='FILTER',
+        help='Filter for JSON output (jq(1)-like)',
+        type=str,
+        default=None,
+    )
+    argp.add_argument(
         '--no-logout',
         dest='logout',
         help=argparse.SUPPRESS,
@@ -140,6 +147,12 @@ def main(argv):
             break
     if args.json_indent < 0:
         args.json_indent = None
+    filters = []
+    if args.json_filter:
+        for filter in re.split(r'\.', re.sub(r'^\.', '', args.json_filter, count=1)):
+            filters += [filter if re.match(r'\D', filter) else int(filter)]
+    else:
+        filters = []
 
     ## FIXME: Raise an exception if name has invalid characters?
 
@@ -185,6 +198,9 @@ def main(argv):
         else:
             for attr in attrs_meta:
                 data.pop(attr, None)
+
+    for filter in filters:
+        data = data[filter]
 
     print(json.dumps(data, indent=args.json_indent, sort_keys=True))
 
