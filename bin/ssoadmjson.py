@@ -25,6 +25,7 @@ import urllib
 
 logger = logging.getLogger(__name__)
 
+agent_name = os.path.basename(__file__)
 conf_path = os.getenv("SSOADMJSON_CONF", "/opt/osstech/etc/openam/ssoadmjson.conf")
 
 am_url = "http://localhost:8080/openam"
@@ -220,6 +221,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
         "login_user": login_user,
         "headers": {
             "Content-Type": "application/json",
+            "User-Agent": agent_name,
         },
     }
     headers = {
