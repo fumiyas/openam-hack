@@ -165,7 +165,9 @@ def main(argv):
             pass
         elif args.op in ['read', 'get']:
             res, data = am_get(token, args.section, args.name)
-            data = data["result"]
+            if args.name is None:
+                ## Extract result only from paged data
+                data = data["result"]
         elif args.op in ['create', 'post']:
             data = json.loads(sys.stdin.read())
             res, data = am_post(token, args.section, args.name, data, action="create")
@@ -257,15 +259,10 @@ def am_url_and_headers(token, section, name=None, headers={}):
 
 
 def am_get(token, section, name, data={}, headers={}):
-    url, headers = am_url_and_headers(token, section, headers=headers)
+    url, headers = am_url_and_headers(token, section, name, headers=headers)
     if name is None:
+        ## Get all items
         data["_queryFilter"] = "true"
-    else:
-        if uuid_re.match(name):
-            ## FIXME: This does NOT match any UUIDs. Why?
-            data["_queryFilter"] = 'uuid eq "%s"' % name
-        else:
-            data["_queryFilter"] = 'name eq "%s"' % name
     if len(data):
         url += '&' + urllib.urlencode(data)
 
