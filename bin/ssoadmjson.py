@@ -165,9 +165,6 @@ def main(argv):
             pass
         elif args.op in ['read', 'get']:
             res, data = am_get(token, args.section, args.name)
-            if args.name is None:
-                ## Extract result only from paged data
-                data = data["result"]
         elif args.op in ['create', 'post']:
             data = json.loads(sys.stdin.read())
             res, data = am_post(token, args.section, args.name, data, action="create")
@@ -264,16 +261,25 @@ def am_url_and_headers(token, section, name=None, headers={}):
 
 
 def am_get(token, section, name, data={}, headers={}):
-    url, headers = am_url_and_headers(token, section, name, headers=headers)
     if name is None:
         ## Get all items
         data["_queryFilter"] = "true"
+    elif re.match(r'^\w+ ((co|eq|g[et]|l[et]|sw) |pr$)', name):
+        ## Use name as query filter ('<field> <operator> "<value>"')
+        data["_queryFilter"] = name
+        name = None
+
+    url, headers = am_url_and_headers(token, section, name, headers=headers)
     if len(data):
         url += '&' + urllib.urlencode(data)
 
     req = urllib2.Request(url, None, headers)
     res = urllib2.urlopen(req)
     data = json.loads(res.read())
+
+    if name is None:
+        ## Extract result only from paged data
+        data = data["result"]
 
     return (res, data)
 
