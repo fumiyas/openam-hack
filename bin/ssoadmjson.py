@@ -66,7 +66,7 @@ def main(argv):
     argp.add_argument(
         'name',
         metavar='NAME',
-        help='Item name or UUID',
+        help='Item name (or UUID for resourcetypes section)',
         type=str,
         nargs='?',
         default=None,
