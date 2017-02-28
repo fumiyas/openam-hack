@@ -188,7 +188,12 @@ def main(argv):
         if code >= 500:
             logger.error("HTTP server error: %s", e)
             return ret
-        data = json.loads(e.read())
+        data_str = e.read()
+        try:
+            data = json.loads(data_str)
+        except ValueError as e:
+            logger.error("Cannot decode response body as JSON: %s" % data_str)
+            raise
     except urllib2.URLError as e:
         logger.error("Opening URL failed: %s %s", args.url, e)
         return 1
