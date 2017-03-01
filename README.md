@@ -18,11 +18,12 @@ WARNING: Currently, server certificate verification is not performed!
 ### How to install, setup
 
 ```console
-$ sudo install -d -m 0755 /opt/osstech/bin/ssoadmjson
-$ sudo install -m 0640 etc/ssoadmjson.conf /opt/osstech/etc/openam/
-$ sudo install -d -m 0755 /opt/osstech/etc/openam
-$ sudo install -m 0640 etc/ssoadmjson.conf /opt/osstech/etc/openam/
-$ sudoedit /opt/osstech/etc/openam/ssoadmjson.conf
+$ sed 's|/opt/osstech/|/usr/local/|' bin/ssoadmjson.py >bin/ssoadmjson
+$ sudo install -d -m 0755 /usr/local/bin/ssoadmjson
+$ sudo install -m 0755 bin/ssoadmjson /usr/local/bin/ssoadmjson
+$ sudo install -d -m 0755 /usr/local/etc/openam
+$ sudo install -m 0640 etc/ssoadmjson.conf /usr/local/etc/openam/
+$ sudoedit /usr/local/etc/openam/ssoadmjson.conf
 ...
 ```
 
