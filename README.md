@@ -46,8 +46,8 @@ Realms operation:
 # ssoadmjson read realms
 [
     "/",
-        "/SiteRealm"
-	]
+    "/SiteRealm"
+]
 # ssoadmjson delete realms /SiteRealm
 {
     "success": "true"
