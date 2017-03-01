@@ -108,7 +108,7 @@ Resource Type operation:
             "POST": true
         },
         "description": "",
-        "name": "URL (HEAD, GET POST only)",
+        "name": "URLResourceType",
         "patterns": [
             "*://*:*/*",
             "*://*:*/*?*"
