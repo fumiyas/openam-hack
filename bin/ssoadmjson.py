@@ -251,7 +251,7 @@ def am_logout(token):
 
 
 def am_url_and_headers(token, section, name=None, headers={}):
-    url = token["url_json"] + urllib.quote(section, safe="")
+    url = token["url_json"] + section
     if name is not None:
         url += '/' + urllib.quote(name, safe="")
     url += '?realm=' + token["url_realm"]
