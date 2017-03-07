@@ -140,4 +140,4 @@ Resource Type operation:
 ### References
 
 * 2. Developing Client Applications - OpenAM Developer's Guide - Docs - ForgeRock BackStage
-  * https://backstage.forgerock.com/docs/openam/13.5/dev-guide/chap-client-dev#rest-api-authz-resource-types-update
+  * https://backstage.forgerock.com/docs/openam/13.5/dev-guide/chap-client-dev
