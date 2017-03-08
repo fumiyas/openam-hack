@@ -57,7 +57,7 @@ amadmin_sunkeyvalues=$(
     -H "$ldap_uri" \
     -x \
     -D "$bind_dn" \
-    -y "$bind_pw_file" \
+    -y <(head -n 1 "$bind_pw_file" |tr -d '\n') \
     -LLL \
     -o ldif-wrap=no \
     -b "$amadmin_dn" \
@@ -73,7 +73,7 @@ cat <<EOF \
   -H "$ldap_uri" \
   -x \
   -D "$bind_dn" \
-  -y "$bind_pw_file" \
+  -y <(head -n 1 "$bind_pw_file" |tr -d '\n') \
 ;
 dn: $amadmin_dn
 changetype: modify
