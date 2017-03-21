@@ -15,7 +15,7 @@ set -u
 set -o pipefail
 
 export LC_ALL="C"
-export PATH="${OPENAM_BASE_DIR-/opt/osstech/var/lib/tomcat/openam}/opends/bin:${OPENAM_BIN_DIR-/opt/osstech/bin}:/bin:/usr/bin:$PATH"
+export PATH="${OPENAM_BASE_DIR-@OPENAM_BASE_DIR@}/opends/bin:${OPENAM_BIN_DIR-@OPENAM_BIN_DIR@}:/bin:/usr/bin:$PATH"
 
 pdie() { echo "$0: ERROR: ${1-}" 1>&2; exit "${2-1}"; }
 
