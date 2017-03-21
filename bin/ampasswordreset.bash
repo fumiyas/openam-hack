@@ -6,20 +6,22 @@
 ## License: GNU General Public License version 3
 ##
 ## Requirements:
-##   OpenLDAP ldapsearch(1), ldapmodify(1)
 ##   OpenSSL openssl(1)
 ##   OpenAM ampassword
+##   OpenDJ ldapsearch, ldapmodify
 ##
 
 set -u
 set -o pipefail
 
 export LC_ALL="C"
-export PATH="/bin:/usr/bin:/opt/osstech/bin"
+export PATH="${OPENAM_BASE_DIR-/opt/osstech/var/lib/tomcat/openam}/opends/bin:${OPENAM_BIN_DIR-/opt/osstech/bin}:/bin:/usr/bin:$PATH"
 
 pdie() { echo "$0: ERROR: ${1-}" 1>&2; exit "${2-1}"; }
 
-ldap_uri="ldap://localhost:50389/"
+## ======================================================================
+
+ldap_uri="ldap://localhost:50389"
 admin_name="amAdmin"
 disable_password=""
 usage="Usage: $0 [OPTIONS] BIND_DN BIND_PW_FILE [AMADMIN_PW_FILE]"
@@ -59,7 +61,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   -H|--ldap-uri)
     [[ $# -lt 1 ]] && pdie "Option requires an argument: $opt"
-    ldap_uri="$1"; shift
+    ldap_uri="${1%/}"; shift
     ;;
   -n|--name)
     [[ $# -lt 1 ]] && pdie "Option requires an argument: $opt"
@@ -90,14 +92,32 @@ bind_dn="$1"; shift
 bind_pw_file="$1"; shift
 admin_pw_file="${1-}"; ${1+shift}
 
+## ----------------------------------------------------------------------
+
+ldap_opts=()
+
+if [[ $ldap_uri == *:* ]]; then
+  ldap_opts+=(--port "${ldap_uri##*:}")
+  ldap_host="${ldap_uri%:*}"
+  ldap_host="${ldap_host#*://}"
+else
+  if [[ $ldap_uri == ldaps:* ]]; then
+    ldap_opts+=(--port 636 --useSSL)
+  fi
+  ldap_host="${ldap_uri#*://}"
+fi
+
+ldap_opts+=(--hostname "$ldap_host")
+
+## ======================================================================
+
 ldap_suffix=$(
   ldapsearch \
-    -LLL \
-    -o ldif-wrap=no \
-    -H "$ldap_uri" \
-    -x \
-    -b '' \
-    -s base \
+    "${ldap_opts[@]}" \
+    --baseDN '' \
+    --searchScope base \
+    --dontWrap \
+    '(objectClass=*)' \
     namingContexts \
   |sed -n '1d;s/^[^:]*: //p' \
   ;
@@ -120,26 +140,25 @@ fi
 
 amadmin_sunkeyvalues=$(
   ldapsearch \
-    -H "$ldap_uri" \
-    -x \
-    -D "$bind_dn" \
-    -y <(head -n 1 "$bind_pw_file" |tr -d '\n') \
-    -LLL \
-    -o ldif-wrap=no \
-    -b "$amadmin_dn" \
+    "${ldap_opts[@]}" \
+    --bindDN "$bind_dn" \
+    --bindPasswordFile "$bind_pw_file" \
+    --baseDN "$amadmin_dn" \
+    --searchScope sub \
+    --dontWrap \
     '(objectClass=*)' \
     sunKeyValue \
-  |sed '1d' \
-  |grep -iv '^sunKeyValue: userPassword=' \
+  |sed \
+    -e '1d' \
+    -e '/^sunKeyValue: userPassword=/d' \
   ;
 ) || exit $?
 
 cat <<EOF \
 |ldapmodify \
-  -H "$ldap_uri" \
-  -x \
-  -D "$bind_dn" \
-  -y <(head -n 1 "$bind_pw_file" |tr -d '\n') \
+  "${ldap_opts[@]}" \
+  --bindDN "$bind_dn" \
+  --bindPasswordFile "$bind_pw_file" \
 ;
 dn: $amadmin_dn
 changetype: modify
