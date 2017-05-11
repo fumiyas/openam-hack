@@ -18,11 +18,14 @@ WARNING: Currently, server certificate verification is not performed!
 ### How to install, setup
 
 ```console
-$ sed 's|/opt/osstech/|/usr/local/|' bin/ssoadmjson.py >bin/ssoadmjson
-$ sudo install -d -m 0755 /usr/local/bin/ssoadmjson
-$ sudo install -m 0755 bin/ssoadmjson /usr/local/bin/ssoadmjson
+$ git clone git@github.com:fumiyas/openam-hack.git
+$ cd openam-hack/bin
+$ make
+...
+$ sudo make install
+...
 $ sudo install -d -m 0755 /usr/local/etc/openam
-$ sudo install -m 0640 etc/ssoadmjson.conf /usr/local/etc/openam/
+$ sudo install -m 0640 ../etc/ssoadmjson.conf /usr/local/etc/openam/
 $ sudoedit /usr/local/etc/openam/ssoadmjson.conf
 ...
 ```
