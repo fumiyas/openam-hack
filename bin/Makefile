@@ -1,6 +1,6 @@
 TARGETS=		ampasswordreset ssoadmjson
 
-prefix=			/opt/osstech
+prefix=			/usr/local
 sysconfdir=		$(prefix)/etc
 bindir=			$(prefix)/bin
 localstatedir=		$(prefix)/var
