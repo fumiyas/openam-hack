@@ -10,15 +10,12 @@ What's this?
 Blah, Blah.
 I'm here! I'm here!
 
-`ssoadmjson`
+How to install, setup
 ---------------------------------------------------------------------
-
-WARNING: Currently, server certificate verification is not performed!
-
-### How to install, setup
 
 ```console
 $ git clone git@github.com:fumiyas/openam-hack.git
+...
 $ cd openam-hack/bin
 $ make
 ...
@@ -29,6 +26,34 @@ $ sudo install -m 0640 ../etc/ssoadmjson.conf /usr/local/etc/openam/
 $ sudoedit /usr/local/etc/openam/ssoadmjson.conf
 ...
 ```
+
+`ampasswordreset`
+---------------------------------------------------------------------
+
+Show help message:
+
+```console
+$ ampasswordreset --help
+...help messages...
+```
+
+Reset amAdmin's password:
+
+```console
+$ ampasswordreset 'cn=Directory Manager' DirectoryManager.password amAdmin.password
+```
+
+Disable UrlAccessAgent's password:
+
+```console
+$ ampasswordreset -n amService-URLAccessAgent -D 'cn=Directory Manager' DirectoryManager.password
+```
+
+`ssoadmjson`
+---------------------------------------------------------------------
+
+WARNING: Currently, server certificate verification is not performed!
+
 
 ### Usage
 
