@@ -27,44 +27,42 @@ $ sudoedit /usr/local/etc/openam/ssoadmjson.conf
 ...
 ```
 
-`ampasswordreset`
+Usage
 ---------------------------------------------------------------------
 
-Show help message:
+### `ampasswordreset`
+
+#### Show help message
 
 ```console
 $ ampasswordreset --help
 ...help messages...
 ```
 
-Reset amAdmin's password:
+#### Reset amAdmin's password
 
 ```console
 $ ampasswordreset 'cn=Directory Manager' DirectoryManager.password amAdmin.password
 ```
 
-Disable UrlAccessAgent's password:
+#### Disable UrlAccessAgent's password:
 
 ```console
 $ ampasswordreset -n amService-URLAccessAgent -D 'cn=Directory Manager' DirectoryManager.password
 ```
 
-`ssoadmjson`
----------------------------------------------------------------------
+### `ssoadmjson`
 
 WARNING: Currently, server certificate verification is not performed!
 
-
-### Usage
-
-Show help message:
+#### Show help message
 
 ```console
 # ssoadmjson --help
 ...help messages...
 ```
 
-Realms operation:
+#### Realms operation
 
 ```console
 # echo '{"realm": "SiteRealm"}' |ssoadmjson create realms
@@ -82,7 +80,7 @@ Realms operation:
 }
 ```
 
-Resource Type operation:
+#### Resource Type operation
 
 ```console
 # cat resourcetype-url.json
@@ -165,7 +163,7 @@ Resource Type operation:
 ]
 ```
 
-### References
+#### References
 
 * 2. Developing Client Applications - OpenAM Developer's Guide - Docs - ForgeRock BackStage
   * https://backstage.forgerock.com/docs/openam/13.5/dev-guide/chap-client-dev
