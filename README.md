@@ -32,6 +32,8 @@ Usage
 
 ### `ampasswordreset`
 
+Reset amAdmin's password by OpenDJ admin (cn=Directory Manager).
+
 #### Show help message
 
 ```console
@@ -52,6 +54,8 @@ $ ampasswordreset -n amService-URLAccessAgent -D 'cn=Directory Manager' Director
 ```
 
 ### `ssoadmjson`
+
+Administration tool by JSON data via ForgeRock Common REST API.
 
 WARNING: Currently, server certificate verification is not performed!
 
