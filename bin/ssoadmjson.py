@@ -20,7 +20,7 @@ import re
 import errno
 import imp
 import json
-import urllib2
+import requests
 import urllib
 
 logger = logging.getLogger(__name__)
@@ -159,41 +159,37 @@ def main(argv):
 
     ret = 0
     token = None
-    try:
-        data, token = am_login(args.url, args.realm, args.login_realm, args.login_user, args.login_pass)
-        if args.op in ['login']:
-            pass
-        elif args.op in ['read', 'get']:
-            res, data = am_get(token, args.section, args.name)
-        elif args.op in ['create', 'post']:
-            data = json.loads(sys.stdin.read())
-            res, data = am_post(token, args.section, args.name, data, action="create")
-        elif args.op in ['update', 'put']:
-            data = json.loads(sys.stdin.read())
-            if args.name is None:
-                args.name = data.get('uuid', data.get('name'))
-            res, data = am_put(token, args.section, args.name, data)
-        elif args.op in ['delete']:
-            res, data = am_delete(token, args.section, args.name)
-        else:
-            logger.error("Unknown operation: %s", args.op)
-            return 1
-    except urllib2.HTTPError as e:
-        code = e.getcode()
-        ## Map an error HTTP response code (4XX, 5XX) into the exit code
-        ret = code - 350
-        if code >= 500:
-            logger.error("HTTP server error: %s", e)
-            return ret
-        data_str = e.read()
-        try:
-            data = json.loads(data_str)
-        except ValueError as e:
-            logger.error("Cannot decode response body as JSON: %s" % data_str)
-            raise
-    except urllib2.URLError as e:
-        logger.error("Opening URL failed: %s %s", args.url, e)
+
+    data, token = am_login(args.url, args.realm, args.login_realm, args.login_user, args.login_pass)
+    if args.op in ['login']:
+        pass
+    elif args.op in ['read', 'get']:
+        res, data = am_get(token, args.section, args.name)
+    elif args.op in ['create', 'post']:
+        data = json.loads(sys.stdin.read())
+        res, data = am_post(token, args.section, args.name, data, action="create")
+    elif args.op in ['update', 'put']:
+        data = json.loads(sys.stdin.read())
+        if args.name is None:
+            args.name = data.get('uuid', data.get('name'))
+        res, data = am_put(token, args.section, args.name, data)
+    elif args.op in ['delete']:
+        res, data = am_delete(token, args.section, args.name)
+    else:
+        logger.error("Unknown operation: %s", args.op)
         return 1
+
+    if res.status_code >= 400:
+        ## Map an error HTTP response code (4XX, 5XX) into the exit code
+        ret = res.status_code - 350
+        if res.status_code >= 500:
+            logger.error("HTTP server error: %s", res.text)
+            return ret
+        try:
+            data = json.loads(res.text)
+        except ValueError as e:
+            logger.error("Cannot decode response body as JSON: %s" % res.text)
+            raise
 
     if not args.json_include_meta:
         data = dict_delete_keys_recursive(data, attrs_meta)
@@ -273,9 +269,8 @@ def am_get(token, section, name, data={}, headers={}):
     if len(data):
         url += '&' + urllib.urlencode(data)
 
-    req = urllib2.Request(url, None, headers)
-    res = urllib2.urlopen(req)
-    data = json.loads(res.read())
+    res = requests.get(url, headers=headers)
+    data = json.loads(res.text)
 
     if name is None:
         ## Extract result only from paged data
@@ -289,9 +284,8 @@ def am_post(token, section, name, data, headers={}, action=None):
     if action is not None:
         url += '&_action=' + urllib.quote(action)
 
-    req = urllib2.Request(url, json.dumps(data), headers)
-    res = urllib2.urlopen(req)
-    data = json.loads(res.read())
+    res = requests.post(url, headers=headers, data=json.dumps(data))
+    data = json.loads(res.text)
 
     return (res, data)
 
@@ -301,10 +295,8 @@ def am_put(token, section, name, data, headers={}, action=None):
     if action is not None:
         url += '&_action=' + urllib.quote(action)
 
-    req = urllib2.Request(url, json.dumps(data), headers)
-    req.get_method = lambda: 'PUT'
-    res = urllib2.urlopen(req)
-    data = json.loads(res.read())
+    res = requests.put(url, headers=headers, data=json.dumps(data))
+    data = json.loads(res.text)
 
     return (res, data)
 
@@ -314,10 +306,8 @@ def am_delete(token, section, name, data={}, headers={}):
     if len(data):
         url += '&' + urllib.urlencode(data)
 
-    req = urllib2.Request(url, None, headers)
-    req.get_method = lambda: 'DELETE'
-    res = urllib2.urlopen(req)
-    data = json.loads(res.read())
+    res = requests.delete(url, headers=headers)
+    data = json.loads(res.text)
 
     return (res, data)
 
