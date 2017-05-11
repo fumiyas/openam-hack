@@ -23,6 +23,13 @@ import json
 import requests
 import urllib
 
+try:
+    ## Python 3
+    import http.client as http_client
+except ImportError:
+    ## Python 2
+    import httplib as http_client
+
 logger = logging.getLogger(__name__)
 
 agent_name = os.path.basename(__file__)
@@ -159,25 +166,31 @@ def main(argv):
 
     ret = 0
     token = None
+    stdout_save = sys.stdout
 
-    data, token = am_login(args.url, args.realm, args.login_realm, args.login_user, args.login_pass)
-    if args.op in ['login']:
-        pass
-    elif args.op in ['read', 'get']:
-        res, data = am_get(token, args.section, args.name)
-    elif args.op in ['create', 'post']:
-        data = json.loads(sys.stdin.read())
-        res, data = am_post(token, args.section, args.name, data, action="create")
-    elif args.op in ['update', 'put']:
-        data = json.loads(sys.stdin.read())
-        if args.name is None:
-            args.name = data.get('uuid', data.get('name'))
-        res, data = am_put(token, args.section, args.name, data)
-    elif args.op in ['delete']:
-        res, data = am_delete(token, args.section, args.name)
-    else:
-        logger.error("Unknown operation: %s", args.op)
-        return 1
+    try:
+        ## Redirect http_client.HTTPConnection debug log to stderr
+        sys.stdout = sys.stderr
+        data, token = am_login(args.url, args.realm, args.login_realm, args.login_user, args.login_pass)
+        if args.op in ['login']:
+            pass
+        elif args.op in ['read', 'get']:
+            res, data = am_get(token, args.section, args.name)
+        elif args.op in ['create', 'post']:
+            data = json.loads(sys.stdin.read())
+            res, data = am_post(token, args.section, args.name, data, action="create")
+        elif args.op in ['update', 'put']:
+            data = json.loads(sys.stdin.read())
+            if args.name is None:
+                args.name = data.get('uuid', data.get('name'))
+            res, data = am_put(token, args.section, args.name, data)
+        elif args.op in ['delete']:
+            res, data = am_delete(token, args.section, args.name)
+        else:
+            logger.error("Unknown operation: %s", args.op)
+            return 1
+    finally:
+        sys.stdout = stdout_save
 
     if res.status_code >= 400:
         ## Map an error HTTP response code (4XX, 5XX) into the exit code
@@ -315,9 +328,19 @@ def am_delete(token, section, name, data={}, headers={}):
 ## ======================================================================
 
 if __name__ == '__main__':
+    logging.basicConfig()
     logformatter = logging.Formatter('%(filename)s: %(levelname)s: %(message)s')
-    loghandler = logging.StreamHandler()
+    loghandler = logging.StreamHandler(sys.stderr)
     loghandler.setFormatter(logformatter)
     logger.addHandler(loghandler)
+
+    requests_logger = logging.getLogger("requests.packages.urllib3")
+    requests_logger.propagate = True
+    requests_logger.addHandler(loghandler)
+
+    if os.environ.get('SSOADMJSON_DEBUG'):
+        loghandler.setLevel(logging.DEBUG)
+        requests_logger.setLevel(logging.DEBUG)
+        http_client.HTTPConnection.debuglevel = 1
 
     sys.exit(main(sys.argv))
