@@ -49,10 +49,14 @@ attrs_meta = ('createdBy', 'creationDate', 'lastModifiedBy', 'lastModifiedDate')
 
 def main(argv):
     try:
+        sys_dont_write_bytecode_save = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True
         imp.load_source(__name__, conf_path)
     except IOError as e:
         if e.errno not in [errno.ENOENT, errno.EPERM, errno.EACCES]:
             raise
+    finally:
+        sys.dont_write_bytecode = sys_dont_write_bytecode_save
 
     argp = argparse.ArgumentParser(prog=argv[0])
     argp.add_argument(
