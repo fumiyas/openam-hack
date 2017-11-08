@@ -8,7 +8,6 @@
 ##
 
 ## TODO: Verify server certificate
-## TODO: Use requests instead of urllib2?
 
 from __future__ import print_function
 
