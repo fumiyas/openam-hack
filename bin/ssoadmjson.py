@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ## -*- coding: utf-8 -*- vim:shiftwidth=4:expandtab:
 ##
 ## OpenAM: Administration tool by JSON data via ForgeRock Common REST API
@@ -20,7 +20,6 @@ import errno
 import imp
 import json
 import requests
-import urllib
 
 try:
     ## Python 3
@@ -28,6 +27,13 @@ try:
 except ImportError:
     ## Python 2
     import httplib as http_client
+
+try:
+    ## Python 3
+    import urllib.parse as urllib_parse
+except ImportError:
+    ## Python 2
+    import urllib as urllib_parse
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +242,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
     token = {
         "url": url,
         "url_json": url + '/json/',
-        "url_realm": urllib.quote(login_realm),
+        "url_realm": urllib_parse.quote(login_realm),
         "realm": realm,
         "login_realm": login_realm,
         "login_user": login_user,
@@ -252,7 +258,7 @@ def am_login(url, realm, login_realm, login_user, login_pass):
 
     res, data = am_post(token, "authenticate", None, {}, headers=headers)
 
-    token["url_realm"] = urllib.quote(realm)
+    token["url_realm"] = urllib_parse.quote(realm)
     token["headers"]["iPlanetDirectoryPro"] = data["tokenId"]
 
     return data, token
@@ -265,7 +271,7 @@ def am_logout(token):
 def am_url_and_headers(token, section, name=None, headers={}):
     url = token["url_json"] + section
     if name is not None:
-        url += '/' + urllib.quote(name, safe="")
+        url += '/' + urllib_parse.quote(name, safe="")
     url += '?realm=' + token["url_realm"]
     headers = dict(headers, **token["headers"])
 
@@ -283,7 +289,7 @@ def am_get(token, section, name, data={}, headers={}):
 
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if len(data):
-        url += '&' + urllib.urlencode(data)
+        url += '&' + urllib_parse.urlencode(data)
 
     res = requests.get(url, headers=headers)
     data = json.loads(res.text)
@@ -298,7 +304,7 @@ def am_get(token, section, name, data={}, headers={}):
 def am_post(token, section, name, data, headers={}, action=None):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if action is not None:
-        url += '&_action=' + urllib.quote(action)
+        url += '&_action=' + urllib_parse.quote(action)
 
     res = requests.post(url, headers=headers, data=json.dumps(data))
     data = json.loads(res.text)
@@ -309,7 +315,7 @@ def am_post(token, section, name, data, headers={}, action=None):
 def am_put(token, section, name, data, headers={}, action=None):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if action is not None:
-        url += '&_action=' + urllib.quote(action)
+        url += '&_action=' + urllib_parse.quote(action)
 
     res = requests.put(url, headers=headers, data=json.dumps(data))
     data = json.loads(res.text)
@@ -320,7 +326,7 @@ def am_put(token, section, name, data, headers={}, action=None):
 def am_delete(token, section, name, data={}, headers={}):
     url, headers = am_url_and_headers(token, section, name, headers=headers)
     if len(data):
-        url += '&' + urllib.urlencode(data)
+        url += '&' + urllib_parse.urlencode(data)
 
     res = requests.delete(url, headers=headers)
     data = json.loads(res.text)
