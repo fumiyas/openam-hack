@@ -2,7 +2,7 @@
 ## -*- coding: utf-8 -*- vim:shiftwidth=4:expandtab:
 ##
 ## OpenAM: Administration tool by JSON data via ForgeRock Common REST API
-## Copyright (c) 2017 SATOH Fumiyasu @ OSS Technology Corp., Japan
+## Copyright (c) 2017-2020 SATOH Fumiyasu @ OSS Technology Corp., Japan
 ##
 ## License: GNU General Public License version 3
 ##
